@@ -22,6 +22,10 @@
       padding:5px 14px; font-size:.82rem; font-weight:600; margin-top:12px;
     }
     .stepper-card { background:var(--surface); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); margin-bottom:16px; }
+    @media(min-width:1024px){
+      .container.scroll-area { max-width:1140px; padding:24px 32px 40px; }
+      .track-cols { display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start; }
+    }
     .stepper-row  { display:flex; align-items:flex-start; }
     .step-v { display:flex; flex-direction:column; align-items:center; }
     .step-v .vline { width:3px; flex:1; background:var(--border); border-radius:99px; min-height:36px; transition:background .5s; }
@@ -61,8 +65,13 @@
 <body>
 <div class="page">
   <nav class="top-nav">
-    <button onclick="history.back()" style="background:transparent;border:none;color:#fff;font-size:1.1rem;cursor:pointer;margin-right:10px">←</button>
+    <button onclick="history.back()" style="background:transparent;border:none;color:#fff;font-size:1.1rem;cursor:pointer;margin-right:10px;padding:4px 8px;border-radius:var(--radius-sm)">← Back</button>
     <div class="nav-logo">APU <span>Eats</span></div>
+    <div class="nav-links">
+      <a href="home.html">🏠 Home</a>
+      <a href="tracking.html" class="active">⏱ Orders</a>
+      <a href="cart.html">🛒 Cart</a>
+    </div>
     <div class="nav-actions">
       <div class="lang-switcher">
         <button class="lang-btn active" data-lang="en">EN</button>
@@ -73,7 +82,9 @@
   </nav>
 
   <div class="container scroll-area">
-
+   <div class="track-cols">
+   <!-- Left column -->
+   <div>
     <!-- Status card -->
     <div class="status-card">
       <div class="order-id" id="orderId">ORD-0000 · Uncle Lim's</div>
@@ -88,6 +99,9 @@
       <div id="stepperVert"></div>
     </div>
 
+   </div><!-- end left col -->
+   <!-- Right column -->
+   <div>
     <!-- Queue ticket -->
     <div class="queue-section">
       <div class="section-title">Your Queue Ticket</div>
@@ -126,6 +140,8 @@
     </div>
 
     <a href="home.html" class="btn btn-outline btn-block" style="margin-bottom:16px">← Back to Home</a>
+   </div><!-- end right col -->
+   </div><!-- end track-cols -->
   </div>
 
   <!-- Bottom Nav -->

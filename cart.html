@@ -28,6 +28,27 @@
     .success-screen .success-icon { font-size:5rem; margin-bottom:16px; }
     .success-screen h2 { font-size:1.3rem; font-weight:800; margin-bottom:8px; }
     .success-screen p  { font-size:.88rem; color:var(--text-muted); margin-bottom:24px; }
+
+    /* ── Desktop: wider container + 2-col cart layout ── */
+    @media (min-width: 1024px) {
+      #stepCart, #stepSummary, #stepPayment {
+        max-width: 1140px; margin: 0 auto; padding: 24px 32px 40px;
+      }
+      .cart-cols {
+        display: grid; grid-template-columns: 1fr 380px;
+        gap: 28px; align-items: start;
+      }
+      .step-header { padding: 14px 32px; }
+      .checkout-steps { max-width: 600px; margin: 0 auto; }
+      #bottomAction {
+        max-width: 1140px; left: 50%; transform: translateX(-50%);
+        padding: 14px 32px;
+      }
+      .pay-cols {
+        display: grid; grid-template-columns: 1fr 340px;
+        gap: 28px; align-items: start;
+      }
+    }
   </style>
 </head>
 <body>
@@ -62,12 +83,16 @@
       <p>Add some delicious food from the cafeteria!</p>
       <a href="home.html" class="btn btn-primary" style="margin-top:16px">Browse Stalls</a>
     </div>
-    <div id="cartItems" style="margin-top:4px"></div>
-    <div id="cartSummaryBox" class="card" style="margin-top:16px;display:none">
-      <div class="card-body">
-        <div class="summary-row"><span>Subtotal</span><span id="subtotal">RM 0.00</span></div>
-        <div class="summary-row"><span>Service Fee</span><span>RM 0.50</span></div>
-        <div class="summary-row total"><span>Total</span><span id="cartTotal">RM 0.00</span></div>
+    <div class="cart-cols">
+      <div id="cartItems" style="margin-top:4px"></div>
+      <div id="cartSummaryBox" class="card" style="margin-top:4px;display:none;position:sticky;top:80px">
+        <div class="card-body">
+          <div class="section-title" style="margin-bottom:12px">Order Summary</div>
+          <div class="summary-row"><span>Subtotal</span><span id="subtotal">RM 0.00</span></div>
+          <div class="summary-row"><span>Service Fee</span><span>RM 0.50</span></div>
+          <div class="summary-row total"><span>Total</span><span id="cartTotal">RM 0.00</span></div>
+          <button class="btn btn-primary btn-block hide-mobile" style="margin-top:16px" onclick="nextStep()">Proceed to Summary →</button>
+        </div>
       </div>
     </div>
   </div>
@@ -106,7 +131,8 @@
 
   <!-- Step 3: Payment -->
   <div id="stepPayment" class="container scroll-area" style="display:none;padding-bottom:100px">
-    <div style="margin-top:4px">
+    <div class="pay-cols" style="margin-top:4px">
+    <div>
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:14px">💳 Select Payment</h3>
       <div class="pay-option selected" onclick="selectPay(this)">
         <input type="radio" name="pay" checked/>
@@ -136,7 +162,19 @@
         <div style="margin-top:12px;font-weight:700;font-size:1.1rem" id="payTotal">RM 0.00</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">APU CAFETERIA SDN BHD</div>
       </div>
+    </div><!-- end left col -->
+    <!-- Right col: order total (desktop) -->
+    <div class="hide-mobile" style="position:sticky;top:80px">
+      <div class="card">
+        <div class="card-body">
+          <div class="section-title" style="margin-bottom:12px">Order Total</div>
+          <div class="summary-row"><span>Subtotal</span><span id="paySubtotal">RM 0.00</span></div>
+          <div class="summary-row"><span>Service Fee</span><span>RM 0.50</span></div>
+          <div class="summary-row total"><span>Total</span><span id="payTotal2">RM 0.00</span></div>
+        </div>
+      </div>
     </div>
+    </div><!-- end pay-cols -->
   </div>
 
   <!-- Success screen -->
@@ -149,10 +187,12 @@
   </div>
 
   <!-- Bottom action -->
-  <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:12px 16px;background:var(--surface);border-top:1px solid var(--border);z-index:90" id="bottomAction">
-    <button class="btn btn-primary btn-block" id="mainActionBtn" onclick="nextStep()">
-      Proceed to Summary →
-    </button>
+  <div style="position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:var(--surface);border-top:1px solid var(--border);z-index:90" id="bottomAction">
+    <div style="max-width:480px;margin:0 auto">
+      <button class="btn btn-primary btn-block" id="mainActionBtn" onclick="nextStep()">
+        Proceed to Summary →
+      </button>
+    </div>
   </div>
 </div>
 

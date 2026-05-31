@@ -31,9 +31,15 @@
 </head>
 <body>
 
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
 <!-- Sidebar -->
-<aside class="sidebar">
-  <div class="sidebar-logo">APU <span>Eats</span><br/><small style="font-weight:400;font-size:.72rem;opacity:.7">Admin Panel</small></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div>APU <span>Eats</span><br/><small style="font-weight:400;font-size:.72rem;opacity:.7">Admin Panel</small></div>
+    <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+  </div>
   <nav class="sidebar-nav">
     <a href="#" class="active" onclick="showSection('dashboard',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -65,6 +71,9 @@
 <!-- Main -->
 <div class="main-content">
   <div class="main-header">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <div>
       <h1 id="sectionTitle">Dashboard Overview</h1>
       <div style="font-size:.78rem;color:var(--text-muted)">APU Cafeteria System · <span id="todayDate"></span></div>
@@ -345,6 +354,11 @@ document.getElementById('todayDate').textContent = new Date().toLocaleDateString
 renderVendors();
 renderUsers();
 renderLiveOrders();
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
 </script>
 </body>
 </html>

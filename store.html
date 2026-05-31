@@ -13,6 +13,8 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 5rem; position: relative;
     }
+    @media(min-width:640px){ .store-banner{height:200px;font-size:6rem;} }
+    @media(min-width:1024px){ .store-banner{height:240px;font-size:7rem;} }
     .store-info {
       background: var(--surface); padding: 14px 16px 10px;
       border-bottom: 1px solid var(--border);
@@ -36,6 +38,8 @@
       cursor: pointer; transition: opacity .3s;
     }
     .sticky-cart.hidden { opacity: 0; pointer-events: none; }
+    @media(min-width:640px){ .sticky-cart{ max-width:560px; } }
+    @media(min-width:1024px){ .sticky-cart{ max-width:680px; bottom:24px; } }
     .sticky-cart .sc-count { background: var(--gold); color: var(--primary); border-radius: 50%; width:26px;height:26px; display:flex;align-items:center;justify-content:center; font-weight:800; font-size:.85rem; }
     /* Modal qty row */
     .modal-img { width:100%;height:160px;object-fit:cover;border-radius:var(--radius);background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:14px; }
@@ -53,9 +57,30 @@
 </head>
 <body>
 <div class="page">
+  <!-- Top Nav (desktop) -->
+  <nav class="top-nav">
+    <button onclick="history.back()" style="background:transparent;border:none;color:#fff;font-size:1.2rem;cursor:pointer;margin-right:10px;padding:4px 8px;border-radius:var(--radius-sm)">← Back</button>
+    <div class="nav-logo">APU <span>Eats</span></div>
+    <div class="nav-links">
+      <a href="home.html">🏠 Home</a>
+      <a href="tracking.html">⏱ Orders</a>
+      <a href="cart.html">🛒 Cart</a>
+    </div>
+    <div class="nav-actions">
+      <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="my">MY</button>
+        <button class="lang-btn" data-lang="zh">中</button>
+      </div>
+      <a href="cart.html" class="icon-btn" style="position:relative">
+        🛒
+        <span class="badge cart-badge" style="display:none;position:absolute;top:4px;right:4px">0</span>
+      </a>
+    </div>
+  </nav>
+
   <!-- Store Banner -->
   <div class="store-banner" id="storeBanner">
-    <button class="back-btn" onclick="history.back()">←</button>
     <span id="storeEmoji">🍛</span>
   </div>
 
@@ -70,8 +95,8 @@
     </div>
   </div>
 
-  <!-- Lang + cart row -->
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
+  <!-- Lang + cart row (mobile/tablet only — desktop uses top-nav) -->
+  <div class="hide-desktop" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
     <div class="lang-switcher" style="gap:4px">
       <button class="lang-btn active" data-lang="en" style="color:var(--text-muted);border-color:var(--border);background:transparent;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border)">EN</button>
       <button class="lang-btn" data-lang="my" style="color:var(--text-muted);border-color:var(--border);background:transparent;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border)">MY</button>
@@ -83,8 +108,10 @@
   </div>
 
   <!-- Category tabs -->
-  <div style="padding:0 16px;background:var(--surface)">
-    <div class="cat-pills" id="menuCats"></div>
+  <div style="padding:0 16px;background:var(--surface);max-width:100%">
+    <div style="max-width:1140px;margin:0 auto">
+      <div class="cat-pills" id="menuCats"></div>
+    </div>
   </div>
 
   <!-- Menu items -->
