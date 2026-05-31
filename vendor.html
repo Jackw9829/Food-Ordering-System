@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APU Eats — Vendor Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body { display:flex; }
+    .order-badge { display:inline-flex;align-items:center;justify-content:center;background:var(--danger);color:#fff;border-radius:50%;width:20px;height:20px;font-size:.7rem;font-weight:800;margin-left:6px; }
+    .tab-bar { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:20px; }
+    .tab-btn { padding:10px 20px; font-family:var(--font); font-size:.88rem; font-weight:600; background:transparent; border:none; cursor:pointer; color:var(--text-muted); border-bottom:3px solid transparent; margin-bottom:-2px; transition:all .2s; }
+    .tab-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .stall-status-bar { display:flex;align-items:center;justify-content:space-between; background:var(--surface);border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow);margin-bottom:20px; }
+    .stall-status-bar h2 { font-size:1rem;font-weight:700; }
+    .stall-status-bar p  { font-size:.78rem;color:var(--text-muted);margin-top:2px; }
+    .order-columns { display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px; }
+    @media(max-width:900px){ .order-columns{grid-template-columns:1fr 1fr;} }
+    @media(max-width:600px){ .order-columns{grid-template-columns:1fr;} .sidebar{display:none;} .main-content{margin-left:0;} }
+    .col-header { font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border); }
+    .col-header.new    { border-color:var(--warning); color:var(--warning); }
+    .col-header.prep   { border-color:var(--primary); color:var(--primary); }
+    .col-header.ready  { border-color:var(--success); color:var(--success); }
+    .menu-manage-row { display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border); }
+    .menu-manage-row:last-child { border-bottom:none; }
+    .menu-emoji { font-size:2rem;width:44px;text-align:center; }
+    .menu-manage-info { flex:1; }
+    .menu-manage-info .mname { font-weight:700;font-size:.9rem; }
+    .menu-manage-info .mprice { font-size:.8rem;color:var(--text-muted); }
+    .chart-bar-wrap { display:flex;align-items:flex-end;gap:8px;height:120px;margin-top:16px; }
+    .chart-bar-col { flex:1;display:flex;flex-direction:column;align-items:center;gap:4px; }
+    .chart-bar { width:100%;background:var(--primary);border-radius:4px 4px 0 0;transition:height .5s; }
+    .chart-bar-label { font-size:.7rem;color:var(--text-muted); }
+    .chart-bar-val { font-size:.68rem;font-weight:700;color:var(--primary); }
+  </style>
+</head>
+<body>
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">APU <span>Eats</span><br/><small style="font-weight:400;font-size:.72rem;opacity:.7">Vendor Panel</small></div>
+  <nav class="sidebar-nav">
+    <a href="#" class="active" onclick="showSection('orders',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      Orders <span class="order-badge" id="newBadge">3</span>
+    </a>
+    <a href="#" onclick="showSection('menu',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
+      Menu Management
+    </a>
+    <a href="#" onclick="showSection('analytics',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Sales Analytics
+    </a>
+    <a href="#" onclick="showSection('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Settings
+    </a>
+    <a href="index.html" style="margin-top:auto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </a>
+  </nav>
+</aside>
+
+<!-- Main content -->
+<div class="main-content">
+  <div class="main-header">
+    <div>
+      <h1 id="sectionTitle">Order Management</h1>
+      <div style="font-size:.78rem;color:var(--text-muted)" id="sectionSub">Uncle Lim's · Today, <span id="todayDate"></span></div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="en" style="color:var(--text-muted);border-color:var(--border);background:transparent;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border)">EN</button>
+        <button class="lang-btn" data-lang="my" style="color:var(--text-muted);border-color:var(--border);background:transparent;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border)">MY</button>
+        <button class="lang-btn" data-lang="zh" style="color:var(--text-muted);border-color:var(--border);background:transparent;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border)">中</button>
+      </div>
+      <span class="badge-pill badge-success">● Open</span>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- === ORDERS SECTION === -->
+    <div id="sec-orders" class="tab-panel active">
+      <!-- Stall status -->
+      <div class="stall-status-bar">
+        <div>
+          <h2>🍛 Uncle Lim's</h2>
+          <p>Block B Cafeteria · Counter A</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:.85rem;font-weight:600">Stall Status</span>
+          <label class="toggle">
+            <input type="checkbox" checked id="stallToggle"/>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Quick stats -->
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+        <div class="stat-card"><div class="stat-icon">🆕</div><div class="stat-val" id="statNew">3</div><div class="stat-label">New Orders</div></div>
+        <div class="stat-card"><div class="stat-icon">🍳</div><div class="stat-val" id="statPrep">2</div><div class="stat-label">Preparing</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val">8</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val">RM 247</div><div class="stat-label">Revenue Today</div></div>
+      </div>
+
+      <!-- Kanban columns -->
+      <div class="order-columns">
+        <div>
+          <div class="col-header new">🆕 New Orders</div>
+          <div id="colNew"></div>
+        </div>
+        <div>
+          <div class="col-header prep">🍳 Preparing</div>
+          <div id="colPrep"></div>
+        </div>
+        <div>
+          <div class="col-header ready">✅ Ready</div>
+          <div id="colReady"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- === MENU SECTION === -->
+    <div id="sec-menu" class="tab-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="font-size:1rem;font-weight:700">Menu Items (7)</h3>
+        <button class="btn btn-primary btn-sm">+ Add Item</button>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="menu-manage-row">
+            <div class="menu-emoji">🍛</div>
+            <div class="menu-manage-info"><div class="mname">Nasi Lemak Special</div><div class="mprice">RM 7.50 · Rice</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="menu-manage-row">
+            <div class="menu-emoji">🍚</div>
+            <div class="menu-manage-info"><div class="mname">Nasi Goreng Kampung</div><div class="mprice">RM 7.00 · Rice</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="menu-manage-row">
+            <div class="menu-emoji">🍗</div>
+            <div class="menu-manage-info"><div class="mname">Chicken Rice</div><div class="mprice">RM 8.50 · Rice</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="menu-manage-row">
+            <div class="menu-emoji">🍗</div>
+            <div class="menu-manage-info"><div class="mname">Ayam Goreng</div><div class="mprice">RM 5.00 · Sides</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="menu-manage-row">
+            <div class="menu-emoji">🥦</div>
+            <div class="menu-manage-info"><div class="mname">Sayur Campur</div><div class="mprice">RM 3.00 · Sides</div></div>
+            <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="menu-manage-row">
+            <div class="menu-emoji">🥤</div>
+            <div class="menu-manage-info"><div class="mname">Iced Milo</div><div class="mprice">RM 2.50 · Drinks</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="menu-manage-row">
+            <div class="menu-emoji">🧊</div>
+            <div class="menu-manage-info"><div class="mname">Teh O Ais</div><div class="mprice">RM 1.80 · Drinks</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- === ANALYTICS SECTION === -->
+    <div id="sec-analytics" class="tab-panel">
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val">42</div><div class="stat-label">Orders Today</div></div>
+        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val">RM 324</div><div class="stat-label">Revenue Today</div></div>
+        <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-val">4.7</div><div class="stat-label">Avg Rating</div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-body">
+          <div style="font-weight:700;margin-bottom:4px">Orders This Week</div>
+          <div style="font-size:.78rem;color:var(--text-muted)">Monday – Sunday</div>
+          <div class="chart-bar-wrap" id="chartWrap"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div style="font-weight:700;margin-bottom:14px">Top Selling Items</div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.88rem"><span>🍛 Nasi Lemak Special</span><span class="badge-pill badge-gold">126 sold</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.88rem"><span>🍗 Ayam Goreng</span><span class="badge-pill badge-info">98 sold</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:.88rem"><span>🥤 Iced Milo</span><span class="badge-pill badge-success">87 sold</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- === SETTINGS SECTION === -->
+    <div id="sec-settings" class="tab-panel">
+      <div class="card" style="max-width:520px">
+        <div class="card-body">
+          <div class="section-title" style="margin-bottom:14px">Stall Information</div>
+          <div class="form-group"><label class="form-label">Stall Name</label><input class="form-control" value="Uncle Lim's"/></div>
+          <div class="form-group"><label class="form-label">Location</label><input class="form-control" value="Block B Cafeteria · Counter A"/></div>
+          <div class="form-group"><label class="form-label">Operating Hours</label><input class="form-control" value="8:00 AM – 6:00 PM"/></div>
+          <div class="form-group">
+            <label class="form-label">Preparation Time (minutes)</label>
+            <input class="form-control" type="number" value="10"/>
+          </div>
+          <button class="btn btn-primary">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+// Orders data
+let orders = [
+  { id:'ORD-1042', customer:'Ah Ming',  items:'Nasi Lemak Special × 1, Iced Milo × 1', total:'RM 10.50', status:'new',  time:'12:34 PM' },
+  { id:'ORD-1041', customer:'Sarah L.', items:'Chicken Rice × 2',                        total:'RM 17.00', status:'new',  time:'12:33 PM' },
+  { id:'ORD-1040', customer:'Rajan K.', items:'Ayam Goreng × 3, Teh O Ais × 2',         total:'RM 18.60', status:'new',  time:'12:31 PM' },
+  { id:'ORD-1039', customer:'Wei Xin',  items:'Nasi Goreng × 1, Iced Milo × 1',         total:'RM 9.50',  status:'prep', time:'12:28 PM' },
+  { id:'ORD-1038', customer:'Fatimah',  items:'Nasi Lemak Special × 2',                  total:'RM 15.00', status:'prep', time:'12:25 PM' },
+];
+
+function renderOrders() {
+  const newO   = orders.filter(o=>o.status==='new');
+  const prepO  = orders.filter(o=>o.status==='prep');
+  const readyO = orders.filter(o=>o.status==='ready');
+  document.getElementById('statNew').textContent  = newO.length;
+  document.getElementById('statPrep').textContent = prepO.length;
+  document.getElementById('newBadge').textContent = newO.length;
+
+  const colNew   = document.getElementById('colNew');
+  const colPrep  = document.getElementById('colPrep');
+  const colReady = document.getElementById('colReady');
+
+  const renderCard = (o) => `
+    <div class="order-card" id="card-${o.id}">
+      <div class="order-card-header">
+        <span class="order-id">${o.id}</span>
+        <span style="font-size:.75rem;color:var(--text-muted)">${o.time}</span>
+      </div>
+      <div style="font-size:.82rem;font-weight:600;margin-bottom:4px">${o.customer}</div>
+      <div class="order-items">${o.items}</div>
+      <div style="font-weight:700;font-size:.88rem;margin-bottom:10px">${o.total}</div>
+      <div class="order-actions">
+        ${o.status==='new'   ? `<button class="btn btn-primary btn-sm" onclick="advanceOrder('${o.id}')">Accept →</button><button class="btn btn-outline btn-sm" onclick="cancelOrder('${o.id}')">Reject</button>` : ''}
+        ${o.status==='prep'  ? `<button class="btn btn-success btn-sm" onclick="advanceOrder('${o.id}')">Mark Ready ✓</button>` : ''}
+        ${o.status==='ready' ? `<button class="btn btn-sm" style="background:#e5e7eb" onclick="completeOrder('${o.id}')">Collected ✓</button>` : ''}
+      </div>
+    </div>
+  `;
+
+  colNew.innerHTML   = newO.length   ? newO.map(renderCard).join('')   : '<div style="font-size:.82rem;color:var(--text-muted);padding:12px 0">No new orders</div>';
+  colPrep.innerHTML  = prepO.length  ? prepO.map(renderCard).join('')  : '<div style="font-size:.82rem;color:var(--text-muted);padding:12px 0">Nothing preparing</div>';
+  colReady.innerHTML = readyO.length ? readyO.map(renderCard).join('') : '<div style="font-size:.82rem;color:var(--text-muted);padding:12px 0">No orders ready</div>';
+}
+
+function advanceOrder(id) {
+  const o = orders.find(o=>o.id===id);
+  if (!o) return;
+  if (o.status==='new')  { o.status='prep';  showToast(`${id} moved to Preparing`,''); }
+  if (o.status==='prep') { o.status='ready'; showToast(`${id} is Ready for pickup!`,'success'); }
+  renderOrders();
+}
+function cancelOrder(id) {
+  orders = orders.filter(o=>o.id!==id);
+  showToast(`${id} rejected`,'');
+  renderOrders();
+}
+function completeOrder(id) {
+  orders = orders.filter(o=>o.id!==id);
+  showToast(`${id} marked collected`,'success');
+  renderOrders();
+}
+
+function showSection(name, el) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('active'));
+  el.classList.add('active');
+  const titles = { orders:'Order Management', menu:'Menu Management', analytics:'Sales Analytics', settings:'Settings' };
+  document.getElementById('sectionTitle').textContent = titles[name];
+}
+
+// Chart
+const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const vals  = [28,35,42,31,50,62,42];
+const maxV  = Math.max(...vals);
+document.getElementById('chartWrap').innerHTML = days.map((d,i)=>`
+  <div class="chart-bar-col">
+    <div class="chart-bar-val">${vals[i]}</div>
+    <div class="chart-bar" style="height:${(vals[i]/maxV)*90}px"></div>
+    <div class="chart-bar-label">${d}</div>
+  </div>
+`).join('');
+
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-MY',{weekday:'short',month:'short',day:'numeric'});
+renderOrders();
+</script>
+</body>
+</html>

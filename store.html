@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APU Eats — Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .store-banner {
+      height: 160px; background: linear-gradient(135deg,#003366,#0055a5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; position: relative;
+    }
+    .store-info {
+      background: var(--surface); padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .store-info h2 { font-size: 1.15rem; font-weight: 800; }
+    .store-meta    { font-size: .78rem; color: var(--text-muted); margin-top: 3px; display:flex; gap:12px; }
+    .store-meta span { display:flex; align-items:center; gap:3px; }
+    .back-btn {
+      position: absolute; top: 12px; left: 12px;
+      background: rgba(0,0,0,.35); border: none; color: #fff;
+      border-radius: 50%; width: 36px; height: 36px;
+      font-size: 1.1rem; cursor: pointer; display:flex;align-items:center;justify-content:center;
+    }
+    .sticky-cart {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      width: calc(100% - 32px); max-width: 448px;
+      background: var(--primary); color: #fff;
+      border-radius: var(--radius); padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: var(--shadow-lg); z-index: 90;
+      cursor: pointer; transition: opacity .3s;
+    }
+    .sticky-cart.hidden { opacity: 0; pointer-events: none; }
+    .sticky-cart .sc-count { background: var(--gold); color: var(--primary); border-radius: 50%; width:26px;height:26px; display:flex;align-items:center;justify-content:center; font-weight:800; font-size:.85rem; }
+    /* Modal qty row */
+    .modal-img { width:100%;height:160px;object-fit:cover;border-radius:var(--radius);background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:14px; }
+    .option-group { margin-bottom:14px; }
+    .option-group label.section-title { margin-bottom:8px; }
+    .option-chips { display:flex;gap:8px;flex-wrap:wrap; }
+    .option-chip {
+      padding:6px 14px;border-radius:99px;font-size:.8rem;font-weight:600;
+      border:1.5px solid var(--border);cursor:pointer;transition:all .2s;
+    }
+    .option-chip.selected { background:var(--primary);color:#fff;border-color:var(--primary); }
+    .checkbox-row { display:flex;align-items:center;gap:10px;margin-bottom:8px; }
+    .checkbox-row input[type=checkbox] { accent-color:var(--primary);width:16px;height:16px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <!-- Store Banner -->
+  <div class="store-banner" id="storeBanner">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <span id="storeEmoji">🍛</span>
+  </div>
+
+  <!-- Store Info -->
+  <div class="store-info">
+    <h2 id="storeName">Uncle Lim's</h2>
+    <div class="store-meta">
+      <span>⭐ 4.7</span>
+      <span>⏱ 10–15 min</span>
+      <span id="storeQueue">👥 3 waiting</span>
+      <span class="badge-pill badge-success">Open</span>
+    </div>
+  </div>
+
+  <!-- Lang + cart row -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
+    <div class="lang-switcher" style="gap:4px">
+      <button class="lang-btn active" data-lang="en" style="color:var(--text-muted);border-color:var(--border);background:transparent;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border)">EN</button>
+      <button class="lang-btn" data-lang="my" style="color:var(--text-muted);border-color:var(--border);background:transparent;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border)">MY</button>
+      <button class="lang-btn" data-lang="zh" style="color:var(--text-muted);border-color:var(--border);background:transparent;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border)">中</button>
+    </div>
+    <a href="cart.html" style="font-size:.85rem;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:6px">
+      🛒 <span class="cart-badge" style="background:var(--gold);color:var(--primary);border-radius:99px;padding:1px 8px;font-size:.75rem;font-weight:800">0</span>
+    </a>
+  </div>
+
+  <!-- Category tabs -->
+  <div style="padding:0 16px;background:var(--surface)">
+    <div class="cat-pills" id="menuCats"></div>
+  </div>
+
+  <!-- Menu items -->
+  <div class="container" style="padding-top:14px;padding-bottom:100px" id="menuList"></div>
+
+  <!-- Sticky cart bar -->
+  <div class="sticky-cart hidden" id="stickyCart" onclick="window.location.href='cart.html'">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="sc-count" id="scCount">0</div>
+      <span style="font-weight:600">View Cart</span>
+    </div>
+    <div>
+      <span id="scTotal" style="font-weight:700">RM 0.00</span>
+      <span style="opacity:.7;margin-left:4px">→</span>
+    </div>
+  </div>
+</div>
+
+<!-- Customise Modal -->
+<div class="modal-overlay" id="customModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-img" id="modalEmoji">🍛</div>
+    <div class="modal-title" id="modalName">Item Name</div>
+    <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:14px" id="modalDesc">Description</div>
+
+    <!-- Sugar level -->
+    <div class="option-group">
+      <div class="section-title" data-i18n="sugarLevel">Sugar Level</div>
+      <div class="option-chips">
+        <div class="option-chip selected" onclick="selectChip(this,'sugar')" data-i18n="normal">Normal</div>
+        <div class="option-chip" onclick="selectChip(this,'sugar')" data-i18n="less">Less Sweet</div>
+        <div class="option-chip" onclick="selectChip(this,'sugar')" data-i18n="noSugar">No Sugar</div>
+      </div>
+    </div>
+
+    <!-- Add-ons -->
+    <div class="option-group">
+      <div class="section-title" data-i18n="addOns">Add-Ons</div>
+      <div class="checkbox-row"><input type="checkbox" id="addon1"/><label for="addon1">Extra egg (+RM 1.00)</label></div>
+      <div class="checkbox-row"><input type="checkbox" id="addon2"/><label for="addon2">Extra sambal (+RM 0.50)</label></div>
+      <div class="checkbox-row"><input type="checkbox" id="addon3"/><label for="addon3">Extra rice (+RM 1.50)</label></div>
+    </div>
+
+    <!-- Remove ingredients -->
+    <div class="option-group">
+      <div class="section-title" data-i18n="removeIngr">Remove Ingredient</div>
+      <div class="checkbox-row"><input type="checkbox" id="rem1"/><label for="rem1">No onion</label></div>
+      <div class="checkbox-row"><input type="checkbox" id="rem2"/><label for="rem2">No chilli</label></div>
+      <div class="checkbox-row"><input type="checkbox" id="rem3"/><label for="rem3">No peanuts</label></div>
+    </div>
+
+    <!-- Qty + Add -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <span class="qty-val" id="modalQty">1</span>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+      <button class="btn btn-primary" style="flex:1;margin-left:14px" onclick="confirmAdd()">
+        <span data-i18n="addToCart">Add to Cart</span> · <span id="modalPrice">RM 0.00</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+const stallData = {
+  1: { name:"Uncle Lim's", emoji:"🍛", queue:3, cats:["All","Rice","Sides","Drinks"],
+       items:[
+    { id:101, cat:"Rice", name:"Nasi Lemak Special",  emoji:"🍛", desc:"Fragrant coconut rice with sambal, fried chicken, egg & peanuts", price:7.50 },
+    { id:102, cat:"Rice", name:"Nasi Goreng Kampung", emoji:"🍚", desc:"Classic kampung fried rice with anchovies and veg",              price:7.00 },
+    { id:103, cat:"Rice", name:"Chicken Rice",        emoji:"🍗", desc:"Hainanese steamed chicken with fragrant rice",                  price:8.50 },
+    { id:104, cat:"Sides", name:"Ayam Goreng",        emoji:"🍗", desc:"Crispy fried chicken thigh marinated in local spices",          price:5.00 },
+    { id:105, cat:"Sides", name:"Sayur Campur",       emoji:"🥦", desc:"Stir-fried mixed vegetables",                                  price:3.00 },
+    { id:106, cat:"Drinks", name:"Iced Milo",         emoji:"🥤", desc:"Chilled milo with condensed milk",                             price:2.50 },
+    { id:107, cat:"Drinks", name:"Teh O Ais",         emoji:"🧊", desc:"Iced black tea, lightly sweetened",                            price:1.80 },
+  ]},
+  2: { name:"Mamak Corner", emoji:"🧋", queue:7, cats:["All","Mains","Roti","Drinks"],
+       items:[
+    { id:201, cat:"Drinks",  name:"Teh Tarik",         emoji:"🧋", desc:"Pulled milk tea, frothy and sweet",            price:2.50 },
+    { id:202, cat:"Drinks",  name:"Milo Dinosaur",     emoji:"🍫", desc:"Iced milo topped with Milo powder",            price:3.50 },
+    { id:203, cat:"Roti",    name:"Roti Canai",        emoji:"🫓", desc:"Flaky flatbread with dhal curry",               price:2.00 },
+    { id:204, cat:"Roti",    name:"Roti Telur",        emoji:"🥚", desc:"Egg-filled flatbread",                         price:3.00 },
+    { id:205, cat:"Mains",   name:"Mee Goreng Mamak",  emoji:"🍝", desc:"Spicy fried yellow noodles with egg and tofu", price:7.00 },
+    { id:206, cat:"Mains",   name:"Maggi Goreng",      emoji:"🍜", desc:"Fried instant noodles mamak style",            price:6.00 },
+  ]},
+  3: { name:"Ah Weng Noodle", emoji:"🍜", queue:5, cats:["All","Noodles","Soups","Drinks"],
+       items:[
+    { id:301, cat:"Noodles", name:"Wonton Mee",        emoji:"🍜", desc:"Springy noodles with char siu and wonton",    price:8.00 },
+    { id:302, cat:"Noodles", name:"Pan Mee",            emoji:"🍝", desc:"Hand-torn noodles with minced pork broth",   price:8.50 },
+    { id:303, cat:"Soups",   name:"Beef Noodle Soup",  emoji:"🥣", desc:"Clear broth with beef slices and noodles",   price:10.00},
+    { id:304, cat:"Drinks",  name:"Soya Bean Milk",    emoji:"🥛", desc:"Cold fresh soya bean milk",                  price:2.00 },
+  ]},
+  4: { name:"Western Bites", emoji:"🍔", queue:2, cats:["All","Burgers","Sides","Drinks"],
+       items:[
+    { id:401, cat:"Burgers", name:"Chicken Burger",    emoji:"🍔", desc:"Crispy chicken fillet with lettuce & sauce",  price:10.00},
+    { id:402, cat:"Burgers", name:"Double Beef Burger",emoji:"🍔", desc:"Double beef patty with cheese and pickles",   price:13.00},
+    { id:403, cat:"Sides",   name:"Fries",             emoji:"🍟", desc:"Golden crispy french fries",                 price:4.00 },
+    { id:404, cat:"Drinks",  name:"Iced Lemon Tea",    emoji:"🍋", desc:"Refreshing lemon tea over ice",               price:3.50 },
+  ]},
+  5: { name:"Boba & Drinks", emoji:"🧃", queue:4, cats:["All","Milk Tea","Fruit Tea","Smoothies"],
+       items:[
+    { id:501, cat:"Milk Tea", name:"Brown Sugar Boba",  emoji:"🧋", desc:"Tiger milk tea with brown sugar pearls",    price:8.00 },
+    { id:502, cat:"Milk Tea", name:"Matcha Latte",      emoji:"🍵", desc:"Creamy matcha with milk foam topping",      price:9.00 },
+    { id:503, cat:"Fruit Tea",name:"Peach Oolong Tea",  emoji:"🍑", desc:"Oolong tea with peach bits and jelly",      price:7.50 },
+    { id:504, cat:"Smoothies",name:"Mango Smoothie",    emoji:"🥭", desc:"Fresh mango blended with yogurt",           price:8.50 },
+  ]},
+  6: { name:"Snack Station", emoji:"🍟", queue:1, cats:["All","Fried","Baked"],
+       items:[
+    { id:601, cat:"Fried", name:"Fried Chicken Wings", emoji:"🍗", desc:"4 pieces of crispy marinated wings",         price:7.00 },
+    { id:602, cat:"Fried", name:"Sotong Goreng",       emoji:"🦑", desc:"Battered and fried squid rings",             price:6.00 },
+    { id:603, cat:"Baked", name:"Garlic Bread",        emoji:"🥖", desc:"Toasted bread with garlic butter",           price:3.50 },
+  ]},
+  7: { name:"Sweet Treats", emoji:"🍰", queue:0, cats:["All","Cakes","Ice Cream","Pastries"],
+       items:[
+    { id:701, cat:"Cakes",     name:"Chocolate Lava Cake", emoji:"🍫", desc:"Warm chocolate cake with molten centre",  price:9.00 },
+    { id:702, cat:"Ice Cream", name:"Matcha Sundae",       emoji:"🍨", desc:"Matcha soft serve with red bean",          price:6.50 },
+    { id:703, cat:"Pastries",  name:"Egg Tart",            emoji:"🥧", desc:"Buttery pastry shell with silky egg custard",price:3.00},
+  ]},
+};
+
+const params = new URLSearchParams(location.search);
+const stallId = parseInt(params.get('stall') || '1');
+const stall   = stallData[stallId] || stallData[1];
+
+let activeMenuCat = 'All';
+let modalItem = null;
+let modalQty  = 1;
+
+document.getElementById('storeName').textContent  = stall.name;
+document.getElementById('storeEmoji').textContent = stall.emoji;
+document.getElementById('storeQueue').textContent = `👥 ${stall.queue} waiting`;
+
+// Build category pills
+const catContainer = document.getElementById('menuCats');
+stall.cats.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'cat-pill' + (c === 'All' ? ' active' : '');
+  el.textContent = c;
+  el.onclick = () => {
+    activeMenuCat = c;
+    document.querySelectorAll('#menuCats .cat-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    renderMenu();
+  };
+  catContainer.appendChild(el);
+});
+
+function renderMenu() {
+  const list = document.getElementById('menuList');
+  const items = stall.items.filter(i => activeMenuCat === 'All' || i.cat === activeMenuCat);
+  list.innerHTML = items.map(item => `
+    <div class="menu-item" onclick="openCustomModal(${item.id})">
+      <div style="width:80px;height:80px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#e8f0ff,#f3e8ff);display:flex;align-items:center;justify-content:center;font-size:2.5rem;flex-shrink:0">${item.emoji}</div>
+      <div class="menu-item-info">
+        <div class="menu-item-name">${item.name}</div>
+        <div class="menu-item-desc">${item.desc}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="menu-item-price">RM ${item.price.toFixed(2)}</div>
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();quickAdd(${item.id})">+ Add</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openCustomModal(itemId) {
+  modalItem = stall.items.find(i => i.id === itemId);
+  modalQty = 1;
+  document.getElementById('modalEmoji').textContent = modalItem.emoji;
+  document.getElementById('modalName').textContent  = modalItem.name;
+  document.getElementById('modalDesc').textContent  = modalItem.desc;
+  document.getElementById('modalQty').textContent   = modalQty;
+  document.getElementById('modalPrice').textContent = `RM ${(modalItem.price * modalQty).toFixed(2)}`;
+  // reset chips
+  document.querySelectorAll('.option-chip').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.option-chip').classList.add('selected');
+  openModal('customModal');
+}
+
+function quickAdd(itemId) {
+  const item = stall.items.find(i => i.id === itemId);
+  addToCart({ id: item.id, name: item.name, emoji: item.emoji, price: item.price, custom: 'Normal sugar', stall: stall.name });
+  updateStickyCart();
+}
+
+function changeQty(delta) {
+  modalQty = Math.max(1, modalQty + delta);
+  document.getElementById('modalQty').textContent   = modalQty;
+  document.getElementById('modalPrice').textContent = `RM ${(modalItem.price * modalQty).toFixed(2)}`;
+}
+
+function selectChip(el, group) {
+  document.querySelectorAll(`.option-chip`).forEach(c => {
+    // only deselect chips of the same group by proximity
+  });
+  el.parentElement.querySelectorAll('.option-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function confirmAdd() {
+  const sugar = document.querySelector('.option-chips .option-chip.selected')?.textContent || 'Normal';
+  const addons = [...document.querySelectorAll('[id^=addon]:checked')].map(c => c.nextElementSibling.textContent).join(', ');
+  const remove = [...document.querySelectorAll('[id^=rem]:checked')].map(c => c.nextElementSibling.textContent).join(', ');
+  let custom = sugar;
+  if (addons) custom += ` | +${addons}`;
+  if (remove) custom += ` | -${remove}`;
+  for (let i = 0; i < modalQty; i++) {
+    addToCart({ id: modalItem.id, name: modalItem.name, emoji: modalItem.emoji, price: modalItem.price, custom, stall: stall.name });
+  }
+  closeModal('customModal');
+  updateStickyCart();
+}
+
+function updateStickyCart() {
+  const count = cart.reduce((s,i) => s + i.qty, 0);
+  const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const bar = document.getElementById('stickyCart');
+  document.getElementById('scCount').textContent = count;
+  document.getElementById('scTotal').textContent = `RM ${total.toFixed(2)}`;
+  bar.classList.toggle('hidden', count === 0);
+  const badge = document.querySelector('.cart-badge');
+  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline' : 'none'; }
+}
+
+// Close modal on overlay click
+document.getElementById('customModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('customModal');
+});
+
+renderMenu();
+updateStickyCart();
+</script>
+</body>
+</html>
