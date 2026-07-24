@@ -146,6 +146,13 @@ function applyLang() {
   });
 }
 
+/* ── Logout ── */
+function logout() {
+  sessionStorage.removeItem('apu_user');
+  sessionStorage.removeItem('apu_cart');
+  window.location.href = 'index.html';
+}
+
 /* ── Toast ── */
 function showToast(msg, type = '') {
   let container = document.querySelector('.toast-container');
