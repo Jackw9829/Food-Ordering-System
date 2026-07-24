@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APU Eats — Track Order</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .status-card {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: var(--radius); padding: 22px;
+      color: #fff; margin-bottom: 16px;
+    }
+    .status-card .order-id  { font-size:.8rem; opacity:.75; }
+    .status-card .status-label { font-size:1.1rem; font-weight:800; margin-top:4px; }
+    .status-card .status-sub { font-size:.8rem; opacity:.75; margin-top:2px; }
+    .eta-pill {
+      display:inline-flex; align-items:center; gap:6px;
+      background: rgba(255,255,255,.2); border-radius:99px;
+      padding:5px 14px; font-size:.82rem; font-weight:600; margin-top:12px;
+    }
+    .stepper-card { background:var(--surface); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); margin-bottom:16px; }
+    @media(min-width:1024px){
+      .container.scroll-area { max-width:1140px; padding:24px 32px 40px; }
+      .track-cols { display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start; }
+    }
+    .stepper-row  { display:flex; align-items:flex-start; }
+    .step-v { display:flex; flex-direction:column; align-items:center; }
+    .step-v .vline { width:3px; flex:1; background:var(--border); border-radius:99px; min-height:36px; transition:background .5s; }
+    .step-v .vline.done { background:var(--success); }
+    .step-dot-v {
+      width:36px; height:36px; border-radius:50%; border:3px solid var(--border);
+      background:var(--surface); display:flex; align-items:center; justify-content:center;
+      font-size:.9rem; font-weight:700; color:var(--text-muted); transition:all .5s; flex-shrink:0;
+    }
+    .step-dot-v.done   { background:var(--success); border-color:var(--success); color:#fff; }
+    .step-dot-v.active { background:var(--primary); border-color:var(--primary); color:#fff; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,51,102,.35)} 50%{box-shadow:0 0 0 8px rgba(0,51,102,0)} }
+    .step-content { flex:1; padding:0 0 28px 14px; }
+    .step-content h4 { font-size:.95rem; font-weight:700; }
+    .step-content p  { font-size:.78rem; color:var(--text-muted); margin-top:3px; }
+    .step-content .step-time { font-size:.72rem; color:var(--text-muted); margin-top:4px; }
+    .queue-section { margin-bottom:16px; }
+    .queue-panel {
+      background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .queue-panel-header {
+      background:var(--primary); color:#fff; padding:10px 16px;
+      font-size:.85rem; font-weight:700; display:flex; justify-content:space-between;
+    }
+    .queue-row {
+      display:flex; align-items:center; padding:10px 16px;
+      border-bottom:1px solid var(--border); font-size:.88rem;
+    }
+    .queue-row:last-child { border-bottom:none; }
+    .queue-row .qnum { font-weight:800; font-size:1.1rem; width:42px; color:var(--primary); }
+    .queue-row .qstatus { margin-left:auto; }
+    .queue-row.mine { background:#f0f4ff; }
+    .order-items-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:16px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <nav class="top-nav">
+    <button onclick="history.back()" style="background:transparent;border:none;color:#fff;font-size:1.1rem;cursor:pointer;margin-right:10px;padding:4px 8px;border-radius:var(--radius-sm)">← Back</button>
+    <div class="nav-logo">APU <span>Eats</span></div>
+    <div class="nav-links">
+      <a href="home.html">🏠 Home</a>
+      <a href="tracking.html" class="active">⏱ Orders</a>
+      <a href="cart.html">🛒 Cart</a>
+    </div>
+    <div class="nav-actions">
+      <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="my">MY</button>
+        <button class="lang-btn" data-lang="zh">中</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container scroll-area">
+   <div class="track-cols">
+   <!-- Left column -->
+   <div>
+    <!-- Status card -->
+    <div class="status-card">
+      <div class="order-id" id="orderId">ORD-0000 · Uncle Lim's</div>
+      <div class="status-label" id="statusLabel">🍳 Preparing Your Order…</div>
+      <div class="status-sub" id="statusSub">Your food is being freshly prepared</div>
+      <div class="eta-pill">⏱ <span id="etaText">~8 minutes remaining</span></div>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper-card">
+      <h3 style="font-size:.9rem;font-weight:700;margin-bottom:16px">Order Progress</h3>
+      <div id="stepperVert"></div>
+    </div>
+
+   </div><!-- end left col -->
+   <!-- Right column -->
+   <div>
+    <!-- Queue ticket -->
+    <div class="queue-section">
+      <div class="section-title">Your Queue Ticket</div>
+      <div class="ticket" style="margin-bottom:16px">
+        <div style="font-size:.82rem;opacity:.7;margin-bottom:4px">Uncle Lim's · Counter A</div>
+        <div class="ticket-num" id="ticketNum">07</div>
+        <div class="ticket-label">Now serving: <strong id="nowServing">05</strong></div>
+      </div>
+    </div>
+
+    <!-- Live queue panel -->
+    <div class="section-title">Live Queue Status</div>
+    <div class="queue-panel" style="margin-bottom:16px">
+      <div class="queue-panel-header">
+        <span>Queue — Uncle Lim's</span>
+        <span id="liveLabel">● Live</span>
+      </div>
+      <div id="queueRows"></div>
+    </div>
+
+    <!-- Order items -->
+    <div class="section-title">Order Details</div>
+    <div class="order-items-card">
+      <div id="orderItemsList">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.88rem">
+          <span>Nasi Lemak Special × 1</span><span>RM 7.50</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:.88rem">
+          <span>Iced Milo × 1</span><span>RM 2.50</span>
+        </div>
+      </div>
+      <hr class="divider"/>
+      <div style="display:flex;justify-content:space-between;font-weight:700">
+        <span>Total Paid</span><span id="orderTotal">RM 10.50</span>
+      </div>
+    </div>
+
+    <a href="home.html" class="btn btn-outline btn-block" style="margin-bottom:16px">← Back to Home</a>
+   </div><!-- end right col -->
+   </div><!-- end track-cols -->
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="home.html">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span data-i18n="home">Home</span>
+    </a>
+    <a href="tracking.html" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span data-i18n="orders">Orders</span>
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span data-i18n="notifs">Alerts</span>
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span data-i18n="profile">Profile</span>
+    </a>
+  </nav>
+</div>
+
+<script src="script.js"></script>
+<script>
+// Load order from session or use demo data
+const order = JSON.parse(sessionStorage.getItem('apu_order') || 'null') || {
+  id: 'ORD-' + (Math.floor(Math.random()*9000)+1000),
+  queue: 7,
+  items: [
+    { name:'Nasi Lemak Special', qty:1, price:7.50 },
+    { name:'Iced Milo', qty:1, price:2.50 }
+  ],
+  status: 1
+};
+
+const STEPS = [
+  { label:'Order Confirmed',   sub:'Order received by the stall',          icon:'✅', time:'12:31 PM' },
+  { label:'Preparing Your Food', sub:'Freshly prepared by the chef',       icon:'🍳', time:'12:32 PM' },
+  { label:'Ready for Pickup',  sub:'Come collect at Counter A',            icon:'🎉', time:''         },
+];
+
+let currentStatus = order.status ?? 1; // 0=confirmed, 1=preparing, 2=ready
+
+function renderStepper() {
+  const cont = document.getElementById('stepperVert');
+  cont.innerHTML = STEPS.map((step, i) => {
+    const state = i < currentStatus ? 'done' : i === currentStatus ? 'active' : '';
+    const isLast = i === STEPS.length - 1;
+    return `
+      <div class="stepper-row">
+        <div class="step-v">
+          <div class="step-dot-v ${state}">${i < currentStatus ? '✓' : i+1}</div>
+          ${!isLast ? `<div class="vline ${i < currentStatus ? 'done' : ''}"></div>` : ''}
+        </div>
+        <div class="step-content">
+          <h4 style="color:${i <= currentStatus ? 'var(--text)' : 'var(--text-muted)'}">${step.label}</h4>
+          <p>${step.sub}</p>
+          ${step.time || i === currentStatus ? `<div class="step-time">${step.time || 'In progress…'}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateStatusCard() {
+  const labels  = ['⏳ Order Confirmed!', '🍳 Preparing Your Order…', '🎉 Ready for Pickup!'];
+  const subs    = ['Waiting for stall to accept','Your food is being freshly prepared','Please collect at Counter A'];
+  const etas    = ['~12 minutes remaining', '~8 minutes remaining', 'Ready now — please collect!'];
+  document.getElementById('statusLabel').textContent = labels[currentStatus];
+  document.getElementById('statusSub').textContent   = subs[currentStatus];
+  document.getElementById('etaText').textContent     = etas[currentStatus];
+}
+
+function renderQueue() {
+  const myNum = order.queue;
+  const nowNum = Math.max(1, myNum - 2);
+  document.getElementById('ticketNum').textContent = String(myNum).padStart(2,'0');
+  document.getElementById('nowServing').textContent = String(nowNum).padStart(2,'0');
+
+  const rows = document.getElementById('queueRows');
+  const qList = [nowNum, nowNum+1, myNum, myNum+1, myNum+2].filter((v,i,a)=>a.indexOf(v)===i).slice(0,5);
+  rows.innerHTML = qList.map(n => {
+    const isMine = n === myNum;
+    const isServing = n === nowNum;
+    return `
+      <div class="queue-row ${isMine ? 'mine' : ''}">
+        <span class="qnum">${String(n).padStart(2,'0')}</span>
+        <span style="font-size:.85rem;${isMine?'font-weight:700;color:var(--primary)':''}">${isMine ? '← You' : isServing ? 'Being served' : ''}</span>
+        <span class="qstatus">
+          ${isServing ? '<span class="badge-pill badge-warning">Serving</span>' :
+            isMine    ? '<span class="badge-pill badge-info">Waiting</span>'    :
+                        '<span class="badge-pill badge-success">Queued</span>'}
+        </span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderOrderItems() {
+  const list = document.getElementById('orderItemsList');
+  const items = order.items || [];
+  if (items.length > 0) {
+    list.innerHTML = items.map(item => `
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.88rem">
+        <span>${item.name} × ${item.qty}</span>
+        <span>RM ${(item.price * item.qty).toFixed(2)}</span>
+      </div>
+    `).join('');
+    const total = items.reduce((s,i)=>s+i.price*i.qty,0)+0.50;
+    document.getElementById('orderTotal').textContent = `RM ${total.toFixed(2)}`;
+  }
+  document.getElementById('orderId').textContent = `${order.id} · Uncle Lim's`;
+}
+
+// Auto-advance status simulation
+function autoAdvance() {
+  if (currentStatus < 2) {
+    setTimeout(() => {
+      currentStatus++;
+      renderStepper();
+      updateStatusCard();
+      if (currentStatus === 2) {
+        showToast('🔔 Your food is ready for collection!', 'success');
+        // advance queue
+        order.queue = Math.max(1, order.queue - 2);
+        renderQueue();
+      }
+    }, 8000);
+  }
+}
+
+document.getElementById('orderId').textContent = `${order.id} · Uncle Lim's`;
+renderStepper();
+updateStatusCard();
+renderQueue();
+renderOrderItems();
+autoAdvance();
+
+// Blink live label
+setInterval(() => {
+  const el = document.getElementById('liveLabel');
+  el.style.opacity = el.style.opacity === '0.3' ? '1' : '0.3';
+}, 800);
+</script>
+</body>
+</html>
